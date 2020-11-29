@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Hello World!</title>
+</head>
+<body>
+
+<div id="content">
+    <p v-for="card in cards">{{ card }}</p>
+</div>
+
+</body>
+<script>
+    const content = new Vue({
+        el: '#content',
+        data: {
+            cards: [
+                {"word":"엄마","type":"red","hidden":true},
+                {"word":"처음","type":"bystander","hidden":true},
+            ],
+        },
+    })
+</script>
+</html>

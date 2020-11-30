@@ -10,4 +10,18 @@ router.get('/cards', (req, res) => {
     })
 });
 
+router.post('/cards/reset', (req, res) => {
+    data.resetCards();
+    res.send({message: 'success'});
+});
+
+router.post('/card/open', (req, res) => {
+    const id = req.body.id;
+
+    data.cards[id].hidden = false;
+
+    res.send({message: 'success'});
+});
+
+
 module.exports = router;

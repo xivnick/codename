@@ -3,11 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <title>Hello World!</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>Vodka Codename</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        #cards{
+            background-color: #EEE;
+            margin: auto;
+            width: 900px;
+            height: 900px;
+        }
+        .card{
+            width: 180px;
+            height: 100px;
+            float: left;
+            text-align: center;
+            line-height: 100px;
+            border-radius: 10px;
+            border: solid 1px black;
+            position: relative;
+        }
+        .card.red{
+            background-color: #e74c3c;
+        }
+        .card.blue{
+            background-color: #3498db;
+        }
+        .card.bystander{
+            background-color: #f1c40f;
+        }
+        .open-button{
+            position: absolute;
+            right: 20px;
+            bottom: 10px;
+            font-size: 12px;
+            text-decoration: underline;
+            line-height: 1;
+        }
+    </style>
 </head>
 <body>
 
 <div id="content">
+    <a @click="resetCards()">리셋</a>
+    <div id="cards">
+        <template v-for="card in cards">
+            <div class="card"  v-if="card.hidden">
+                {{ card.word }}
+                <a class="open-button" @click="openCard(card.id)">오픈</a>
+            </div>
+            <div class="card"  v-else :class="card.type">
+                {{ card.word }} / {{ card.type }}
+            </div>
+        </template>
+    </div>
     <p v-for="card in cards">{{ card }}</p>
 </div>
 
@@ -16,10 +67,41 @@
     const content = new Vue({
         el: '#content',
         data: {
-            cards: [
-                {"word":"엄마","type":"red","hidden":true},
-                {"word":"처음","type":"bystander","hidden":true},
-            ],
+            cards: [],
+        },
+        created() {
+            this.updateCardData();
+        },
+        methods: {
+            updateCardData() {
+                axios.get('/api/cards')
+                    .then((res) => {
+                        this.cards = res.data.cards;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            },
+            async openCard(id) {
+                await axios.post('/api/card/open', {
+                    id: id,
+                }).then((res) => {
+                    console.log(res);
+                }).catch((err) => {
+                    console.log(err);
+                });
+
+                this.updateCardData();
+            },
+            async resetCards() {
+                await axios.post('/api/cards/reset')
+                    .then((res) => {
+                        console.log(res);
+                    }).catch((err) => {
+                        console.log(err);
+                    });
+                this.updateCardData();
+            },
         },
     })
 </script>

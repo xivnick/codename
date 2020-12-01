@@ -8,6 +8,4 @@ module.exports = {
     BLUE: 'blue',
     BYSTANDER: 'bystander',
     ASSASSIN: 'assassin',
-
-
 }

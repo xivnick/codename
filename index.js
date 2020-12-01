@@ -14,7 +14,7 @@ app.use('/api', api);
 
 app.get('/test', (req, res) => {
     return res.send({
-        cards: data.cards,
+        cards: data.cardList.cards,
     });
 });
 

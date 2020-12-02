@@ -18,16 +18,26 @@ router.get('/cards', (req, res) => {
 });
 
 router.post('/cards/reset', (req, res) => {
-    game.resetCards();
+    game.softReset();
     res.send({message: 'success'});
 });
 
-router.post('/card/open', (req, res) => {
+router.post('/card/pick', (req, res) => {
     const cardID = req.body.cardID;
+    const userName = req.body.userName;
 
-    game.openCard(cardID);
+    game.pickCard(cardID, userName);
 
     res.send({message: 'success'});
+});
+
+router.post('/user/team', (req, res) => {
+    const userName = req.body.userName;
+    const team = req.body.team;
+    const type = req.body.type || 'player';
+
+    game.removePlayer(userName);
+    game.addPlayer(userName, team, type);
 });
 
 

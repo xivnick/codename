@@ -10,9 +10,9 @@ class CardList {
         this.resetCards();
     }
 
-    openCard(cardID) {
-        if(!this.cards[cardID].hidden) return null;
-        this.cards[cardID].hidden = false;
+    coverCard(cardID) {
+        if(this.cards[cardID].covered) return null;
+        this.cards[cardID].covered = true;
         return this.cards[cardID].type;
     }
 
@@ -20,11 +20,11 @@ class CardList {
         let filteredCards = [];
 
         for(let card of this.cards){
-            if(card.hidden) filteredCards.push({
+            if(!card.covered) filteredCards.push({
                 id: card.id,
                 word: card.word,
                 type: null,
-                hidden: true,
+                covered: false,
             });
             else filteredCards.push(card);
         }
@@ -36,7 +36,7 @@ class CardList {
         let cnt = 0;
 
         for(let card of this.cards){
-            if(card.type === type && card.hidden) cnt++;
+            if(card.type === type && !card.covered) cnt++;
         }
 
         return cnt;
@@ -73,7 +73,7 @@ class CardList {
                 id: i,
                 word: words[i],
                 type: types[i],
-                hidden: true,
+                covered: false,
             });
         }
     }

@@ -4,79 +4,48 @@
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/codename.css"/>
     <title>Vodka Codename</title>
-    <style>
-        *{
-            box-sizing: border-box;
-        }
-        #cards{
-            background-color: #EEE;
-            padding: 0.8% 0 0 0.8%;
-            margin: auto;
-            width: 80%;
-            position: relative;
-        }
-        #cards:after{
-            content: "";
-            clear: both;
-            display: block;
-        }
-        .card{
-            width: 19%;
-            margin: 0 1% 1% 0;
-            height: 12%;
-            float: left;
-            text-align: center;
-            line-height: 100px;
-            border-radius: 10px;
-            border: solid 1px black;
-            position: relative;
-            background-color: #FFFFFF;
-        }
-        .card.red{
-            background-color: #e74c3c;
-        }
-        .card.blue{
-            background-color: #3498db;
-        }
-        .card.bystander{
-            background-color: #f1c40f;
-        }
-        .open-button{
-            position: absolute;
-            right: 20px;
-            bottom: 10px;
-            font-size: 12px;
-            text-decoration: underline;
-            line-height: 1;
-        }
-    </style>
 </head>
 <body>
 
 <div id="content">
-    <a @click="resetCards()">리셋</a>
-    <p>turn : {{turn}}</p>
-    <p>win : {{win}}</p>
+    <a @click="resetCards()">리셋</a> <br>
+    turn : {{turn}} <br>
+    win : {{win}} <br>
+    <template v-if="name">
+        {{name}}님, 환영합니다! <a @click="logout()">로그아웃</a><br>
+        <a @click="postTeam('red','master')">레드팀 팀장</a>
+        <a @click="postTeam('red','player')">레드팀 팀원</a>
+        <a @click="postTeam('blue','master')">블루팀 팀장</a>
+        <a @click="postTeam('blue','player')">블루팀 팀원</a>
+    </template>
     <div id="cards">
         <template v-for="card in cards">
-            <template v-if="card.hidden">
-                <div class="card" v-if="win">
-                    {{ card.word }} / {{ card.type }}
+            <div class="card-wrapper">
+                <div class="card-cover" v-if="card.covered" :class="card.type" @click=""></div>
+
+                <div class="card" v-if="master || win" :class="card.type">
+                    <span>{{ card.word }}</span>
+                </div>
+                <div class="card" v-else-if="card.covered">
+                    <span>{{ card.word }}</span>
                 </div>
                 <div class="card"  v-else>
-                    {{ card.word }}
-                    <a class="open-button" @click="openCard(card.id)">오픈</a>
+                    <span>{{ card.word }}</span>
+                    <a class="open-button" @click="pickCard(card.id)">Pick!</a>
                 </div>
-            </template>
-            <div class="card"  v-else :class="card.type">
-                {{ card.word }} / {{ card.type }}
             </div>
         </template>
     </div>
+    <template v-for="log in logs">
+        {{log}}<br>
+    </template>
 </div>
 
 </body>
+
 <script>
     const content = new Vue({
         el: '#content',
@@ -84,27 +53,47 @@
             cards: [],
             turn: null,
             win: null,
+            name: null,
+            master: false,
+            logs: [],
+            team: null,
+            type: null,
         },
         created() {
             this.updateGameData();
+
+            const socket = io();
+
+            socket.on('connection', () => {
+
+                let name = getCookie('codename_username');
+                while(name === null || name === ''){
+                    name = prompt('이름을 입력해주세요.');
+                }
+                this.name = name;
+                setCookie('codename_username', name, 1);
+                socket.emit('join', name);
+            });
         },
         methods: {
             updateGameData() {
                 axios.get('/api/game')
                 .then((res) => {
                     const game = res.data.game;
-                    console.log(game);
 
                     this.cards = game.cardList.cards;
                     this.turn = game.turn;
                     this.win = game.win;
+
+                    this.logs = game.logs;
                 })
                 .catch((err) => {
                     console.log(err);
                 })
             },
-            async openCard(id) {
-                await axios.post('/api/card/open', {
+            async pickCard(id) {
+                await axios.post('/api/card/pick', {
+                    userName: this.name,
                     cardID: id,
                 }).then((res) => {
                     console.log(res);
@@ -117,13 +106,44 @@
             async resetCards() {
                 await axios.post('/api/cards/reset')
                     .then((res) => {
-                        console.log(res);
+                        // console.log(res);
                     }).catch((err) => {
                         console.log(err);
                     });
                 this.updateGameData();
             },
+            logout() {
+                deleteCookie('codename_username');
+                location.reload();
+            },
+            async postTeam(team, type) {
+                await axios.post('/api/user/team', {
+                    username: this.name,
+                    team,
+                    type,
+                }).then((res) => {
+                    // console.log(res);
+                }).catch((err) => {
+                    console.log(err);
+                });
+
+                this.updateGameData();
+            },
         },
     })
+</script>
+<script>
+    const setCookie = (name, value, exp) => {
+        const date = new Date();
+        date.setTime(date.getTime() + exp*24*60*60*1000);
+        document.cookie = name + '=' + value + ';expires=' + date.toUTCString() + ';path=/';
+    };
+    const getCookie = (name) => {
+        const value = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+        return value?value[2]:null;
+    };
+    const deleteCookie = (name) => {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1999 00:00:10 GMT;';
+    }
 </script>
 </html>

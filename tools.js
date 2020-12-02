@@ -13,10 +13,17 @@ const shuffleArray = (arr) => {
 const reverseColor = (color) => {
     if(color === constants.BLUE) return constants.RED;
     else return constants.BLUE;
-}
+};
+
+const removeElement = (arr, value) => {
+    while(arr.includes(value)){
+        arr.splice(arr.indexOf(value), 1);
+    }
+};
 
 module.exports = {
     getRandomInt,
     shuffleArray,
     reverseColor,
-}
+    removeElement,
+};

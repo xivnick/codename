@@ -1,4 +1,6 @@
 
+const constants = require('./constants');
+
 const getRandomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min)) + min;
 };
@@ -8,7 +10,13 @@ const shuffleArray = (arr) => {
         .map(a => a[1]);
 };
 
+const reverseColor = (color) => {
+    if(color === constants.BLUE) return constants.RED;
+    else return constants.BLUE;
+}
+
 module.exports = {
     getRandomInt,
     shuffleArray,
+    reverseColor,
 }

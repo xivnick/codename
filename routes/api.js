@@ -5,6 +5,12 @@ const router = express.Router();
 const data = require('../data/data.js');
 const game = data.codename;
 
+router.get('/game', (req, res) => {
+    res.send({
+        game: game,
+    })
+});
+
 router.get('/cards', (req, res) => {
     res.send({
         cards: game.cardList.cards,
@@ -12,14 +18,14 @@ router.get('/cards', (req, res) => {
 });
 
 router.post('/cards/reset', (req, res) => {
-    game.cardList.resetCards();
+    game.resetCards();
     res.send({message: 'success'});
 });
 
 router.post('/card/open', (req, res) => {
-    const id = req.body.id;
+    const cardID = req.body.cardID;
 
-    game.cardList.cards[id].hidden = false;
+    game.openCard(cardID);
 
     res.send({message: 'success'});
 });

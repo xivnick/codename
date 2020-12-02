@@ -11,19 +11,27 @@
         }
         #cards{
             background-color: #EEE;
+            padding: 0.8% 0 0 0.8%;
             margin: auto;
-            width: 900px;
-            height: 900px;
+            width: 80%;
+            position: relative;
+        }
+        #cards:after{
+            content: "";
+            clear: both;
+            display: block;
         }
         .card{
-            width: 180px;
-            height: 100px;
+            width: 19%;
+            margin: 0 1% 1% 0;
+            height: 12%;
             float: left;
             text-align: center;
             line-height: 100px;
             border-radius: 10px;
             border: solid 1px black;
             position: relative;
+            background-color: #FFFFFF;
         }
         .card.red{
             background-color: #e74c3c;
@@ -48,18 +56,24 @@
 
 <div id="content">
     <a @click="resetCards()">리셋</a>
+    <p>turn : {{turn}}</p>
+    <p>win : {{win}}</p>
     <div id="cards">
         <template v-for="card in cards">
-            <div class="card"  v-if="card.hidden">
-                {{ card.word }}
-                <a class="open-button" @click="openCard(card.id)">오픈</a>
-            </div>
+            <template v-if="card.hidden">
+                <div class="card" v-if="win">
+                    {{ card.word }} / {{ card.type }}
+                </div>
+                <div class="card"  v-else>
+                    {{ card.word }}
+                    <a class="open-button" @click="openCard(card.id)">오픈</a>
+                </div>
+            </template>
             <div class="card"  v-else :class="card.type">
                 {{ card.word }} / {{ card.type }}
             </div>
         </template>
     </div>
-    <p v-for="card in cards">{{ card }}</p>
 </div>
 
 </body>
@@ -68,30 +82,37 @@
         el: '#content',
         data: {
             cards: [],
+            turn: null,
+            win: null,
         },
         created() {
-            this.updateCardData();
+            this.updateGameData();
         },
         methods: {
-            updateCardData() {
-                axios.get('/api/cards')
-                    .then((res) => {
-                        this.cards = res.data.cards;
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                    });
+            updateGameData() {
+                axios.get('/api/game')
+                .then((res) => {
+                    const game = res.data.game;
+                    console.log(game);
+
+                    this.cards = game.cardList.cards;
+                    this.turn = game.turn;
+                    this.win = game.win;
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
             },
             async openCard(id) {
                 await axios.post('/api/card/open', {
-                    id: id,
+                    cardID: id,
                 }).then((res) => {
                     console.log(res);
                 }).catch((err) => {
                     console.log(err);
                 });
 
-                this.updateCardData();
+                this.updateGameData();
             },
             async resetCards() {
                 await axios.post('/api/cards/reset')
@@ -100,7 +121,7 @@
                     }).catch((err) => {
                         console.log(err);
                     });
-                this.updateCardData();
+                this.updateGameData();
             },
         },
     })

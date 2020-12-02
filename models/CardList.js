@@ -10,6 +10,12 @@ class CardList {
         this.resetCards();
     }
 
+    openCard(cardID) {
+        if(!this.cards[cardID].hidden) return null;
+        this.cards[cardID].hidden = false;
+        return this.cards[cardID].type;
+    }
+
     getFilteredCards() {
         let filteredCards = [];
 
@@ -30,7 +36,7 @@ class CardList {
         let cnt = 0;
 
         for(let card of this.cards){
-            if(card.type === type) cnt++;
+            if(card.type === type && card.hidden) cnt++;
         }
 
         return cnt;

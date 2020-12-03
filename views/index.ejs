@@ -32,20 +32,20 @@
                 <div class="card" v-if="master || win" :class="card.type">
                     <span>{{ card.word }}</span>
                 </div>
-                <div class="card" v-else-if="card.covered || turn !== team">
+                <div class="card" v-else>
                     <span>{{ card.word }}</span>
-                </div>
-                <div class="card"  v-else>
-                    <span>{{ card.word }}</span>
-                    <a class="open-button" @click="pickCard(card.id)">Pick!</a>
+                    <a class="open-button"
+                       @click="pickCard(card.id)"
+                       v-if="!card.covered && turn === team && hint"
+                    >Pick!</a>
                 </div>
             </div>
         </template>
     </div>
-    <div id="hint-form" v-if="master && turn === team">
+    <div id="hint-form" v-if="master && turn === team && !hint">
         <input name="hint" type="text">
-        <select name="hintCnt">
-            <option value="">-</option>
+        <select name="hintNum">
+            <option value="-2">-</option>
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -62,7 +62,7 @@
     </div>
     <div>
         hint: {{hint}} <br>
-        hintCnt: {{hintCnt}}
+        hintNum: {{hintNum}}
     </div>
     <template v-for="log in logs">
         {{log}}<br>
@@ -82,7 +82,7 @@
             win: null,
             turn: null,
             hint: null,
-            hintCnt: null,
+            hintNum: null,
             // player data
             name: null,
             team: null,
@@ -102,9 +102,9 @@
                 this.name = name;
                 setCookie('codename_username', name, 1);
                 socket.emit('join', name);
-            });
 
-            this.updateGameData();
+                this.updateGameData();
+            });
         },
         methods: {
             updateGameData() {
@@ -122,7 +122,7 @@
                     this.turn = game.turn;
                     this.win = game.win;
                     this.hint = game.hint;
-                    this.hintCnt = game.hintCnt;
+                    this.hintNum = game.hintNum;
 
                     this.team = res.data.team;
                     this.master = res.data.master;
@@ -170,8 +170,21 @@
 
                 this.updateGameData();
             },
-            postHint() {
-                console.log('postHint');
+            async postHint() {
+                const hint = document.getElementsByName('hint')[0].value;
+                const hintNum = Number(document.getElementsByName('hintNum')[0].value);
+
+                await axios.post('/api/hint', {
+                    userName: this.name,
+                    hint,
+                    hintNum,
+                }).then((res) => {
+                    // console.log(res);
+                }).catch((err) => {
+                    console.log(err);
+                });
+
+                this.updateGameData();
             },
         },
     })

@@ -32,6 +32,12 @@ class Codename {
         this.logs = [];
     }
 
+    turnOver() {
+        this.turn = tools.reverseColor(this.turn);
+
+        this.hint = null;
+    }
+
     pickCard(cardID, userName) {
         this.logs.push(`${userName} - ${this.cardList.cards[cardID].word} 카드를 선택했습니다.`);
         let coverType = this.cardList.coverCard(cardID);
@@ -40,8 +46,8 @@ class Codename {
         if(coverType === constants.ASSASSIN) return this.win = tools.reverseColor(this.turn);
         if(coverType !== constants.BYSTANDER && this.countType(coverType) === 0) return this.win = coverType;
 
-        // TODO: check hintCnt
-        if(coverType !== this.turn) this.turn = tools.reverseColor(this.turn);
+        this.hintCnt--;
+        if(coverType !== this.turn || this.hintCnt === 0) this.turnOver();
     }
 
     countType(type) {

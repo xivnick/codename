@@ -46,4 +46,20 @@ router.post('/user/team', (req, res) => {
     res.send({message: 'success'});
 });
 
+router.post('/hint', (req, res) => {
+    const userName = req.body.userName;
+    const hint = req.body.hint;
+    const hintNum = req.body.hintNum;
+
+    if(!game.isPlayerMaster(userName)) return res.status(403).send();
+    if(game.getPlayerTeam(userName) !== game.turn) return res.status(403).send();
+    if(game.hint !== null) return res.status(403).send();
+
+    game.hint = hint;
+    game.hintNum = hintNum;
+    game.hintCnt = hintNum > 0 ? hintNum + 1 : -1;
+
+    res.send({message: 'success'});
+})
+
 module.exports = router;

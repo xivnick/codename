@@ -16,10 +16,13 @@
     win : {{win}} <br>
     <template v-if="name">
         {{name}}님, 환영합니다! <a @click="logout()">로그아웃</a><br>
-        <a @click="postTeam('red','master')">레드팀 팀장</a>
-        <a @click="postTeam('red','player')">레드팀 팀원</a>
-        <a @click="postTeam('blue','master')">블루팀 팀장</a>
-        <a @click="postTeam('blue','player')">블루팀 팀원</a>
+        <a @click="postTeam('red','master')">레드팀 팀장)</a> {{teams.red.master}} <br>
+        <a @click="postTeam('red','player')">레드팀 팀원)</a> {{teams.red.player}} <br>
+        <a @click="postTeam('blue','master')">블루팀 팀장)</a> {{teams.blue.master}} <br>
+        <a @click="postTeam('blue','player')">블루팀 팀원)</a> {{teams.blue.player}} <br>
+        <br>
+        {{team}} {{master}}
+        <br>
     </template>
     <div id="cards">
         <template v-for="card in cards">
@@ -29,7 +32,7 @@
                 <div class="card" v-if="master || win" :class="card.type">
                     <span>{{ card.word }}</span>
                 </div>
-                <div class="card" v-else-if="card.covered">
+                <div class="card" v-else-if="card.covered || turn !== team">
                     <span>{{ card.word }}</span>
                 </div>
                 <div class="card"  v-else>
@@ -38,6 +41,28 @@
                 </div>
             </div>
         </template>
+    </div>
+    <div id="hint-form" v-if="master && turn === team">
+        <input name="hint" type="text">
+        <select name="hintCnt">
+            <option value="">-</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="-1">∞</option>
+        </select>
+        <button @click="postHint()">힌트 주기</button>
+    </div>
+    <div>
+        hint: {{hint}} <br>
+        hintCnt: {{hintCnt}}
     </div>
     <template v-for="log in logs">
         {{log}}<br>
@@ -50,18 +75,22 @@
     const content = new Vue({
         el: '#content',
         data: {
+            // game data
             cards: [],
-            turn: null,
+            teams: {'blue':{'master': [], 'player': []}, 'red':{'master': [], 'player': []}},
+            // game status
             win: null,
+            turn: null,
+            hint: null,
+            hintCnt: null,
+            // player data
             name: null,
-            master: false,
-            logs: [],
             team: null,
-            type: null,
+            master: false,
+            // log
+            logs: [],
         },
         created() {
-            this.updateGameData();
-
             const socket = io();
 
             socket.on('connection', () => {
@@ -74,29 +103,41 @@
                 setCookie('codename_username', name, 1);
                 socket.emit('join', name);
             });
+
+            this.updateGameData();
         },
         methods: {
             updateGameData() {
-                axios.get('/api/game')
+                axios.get('/api/game', {
+                    params: {
+                        userName: this.name,
+                    }
+                })
                 .then((res) => {
                     const game = res.data.game;
 
                     this.cards = game.cardList.cards;
+                    this.teams = game.teams;
+
                     this.turn = game.turn;
                     this.win = game.win;
+                    this.hint = game.hint;
+                    this.hintCnt = game.hintCnt;
+
+                    this.team = res.data.team;
+                    this.master = res.data.master;
 
                     this.logs = game.logs;
-                })
-                .catch((err) => {
+                }).catch((err) => {
                     console.log(err);
-                })
+                });
             },
             async pickCard(id) {
                 await axios.post('/api/card/pick', {
                     userName: this.name,
                     cardID: id,
                 }).then((res) => {
-                    console.log(res);
+                    // console.log(res);
                 }).catch((err) => {
                     console.log(err);
                 });
@@ -118,7 +159,7 @@
             },
             async postTeam(team, type) {
                 await axios.post('/api/user/team', {
-                    username: this.name,
+                    userName: this.name,
                     team,
                     type,
                 }).then((res) => {
@@ -128,6 +169,9 @@
                 });
 
                 this.updateGameData();
+            },
+            postHint() {
+                console.log('postHint');
             },
         },
     })

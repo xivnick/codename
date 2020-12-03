@@ -13,11 +13,12 @@ class Codename {
 
         this.turn = this.countType(constants.BLUE) > this.countType(constants.RED) ? constants.BLUE : constants.RED;
         this.teams = {};
-        this.teams[constants.BLUE] = {MASTER: [], PLAYER: []};
-        this.teams[constants.RED] = {MASTER: [], PLAYER: []};
+        this.teams[constants.BLUE] = {master: [], player: []};
+        this.teams[constants.RED] = {master: [], player: []};
 
         this.hint = null;
-        this.hintCnt = null;
+        this.hintNum = null;
+        this.hintCnt = 0;
 
         this.logs = [];
     }
@@ -32,7 +33,7 @@ class Codename {
     }
 
     pickCard(cardID, userName) {
-        this.logs.push(`${userName}이(가) ${this.cardList.cards[cardID].word}을(를) 선택했습니다.`);
+        this.logs.push(`${userName} - ${this.cardList.cards[cardID].word} 카드를 선택했습니다.`);
         let coverType = this.cardList.coverCard(cardID);
 
         if(coverType === null) return null;
@@ -52,18 +53,19 @@ class Codename {
             if(this.teams[teamName][MASTER].includes(userName)) return teamName;
             if(this.teams[teamName][PLAYER].includes(userName)) return teamName;
         }
+        return null;
     }
 
     isPlayerMaster(userName){
-        for(let team of this.teams){
+        for(let team of Object.values(this.teams)){
             if(team[MASTER].includes(userName)) return true;
         }
         return false;
     }
 
     removePlayer(userName){
-        for(let team of this.teams){
-            for(let userList of team){
+        for(let team of Object.values(this.teams)){
+            for(let userList of Object.values(team)){
                 tools.removeElement(userList, userName);
             }
         }

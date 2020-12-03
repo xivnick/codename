@@ -6,8 +6,12 @@ const data = require('../data/data.js');
 const game = data.codename;
 
 router.get('/game', (req, res) => {
+    const userName = req.query.userName;
+
     res.send({
         game: game,
+        team: game.getPlayerTeam(userName),
+        master: game.isPlayerMaster(userName),
     })
 });
 
@@ -38,7 +42,8 @@ router.post('/user/team', (req, res) => {
 
     game.removePlayer(userName);
     game.addPlayer(userName, team, type);
-});
 
+    res.send({message: 'success'});
+});
 
 module.exports = router;

@@ -47,7 +47,7 @@ class CardList {
         for(let i = 0; i < 25; i++){
             let new_id = tools.getRandomInt(0, wordData.length);
 
-            while(new_id in ids) new_id = tools.getRandomInt(0, wordData.length);
+            while(ids.includes(new_id)) new_id = tools.getRandomInt(0, wordData.length);
 
             ids.push(new_id);
         }

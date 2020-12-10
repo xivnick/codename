@@ -29,15 +29,24 @@ a {
   width: 100%;
   height: 100%;
   border-radius: 10px;
-  border: solid 1px black; }
+  border: solid 1px black;
+  -webkit-transition: all 0.5s;
+  transition: all 0.5s;
+  transform-origin: top; }
   .card-cover.red {
-    background-color: #e74c3c; }
+    background: #a3341a;
+    background: radial-gradient(circle, #a3341a 20%, #541909 100%); }
   .card-cover.blue {
-    background-color: #3498db; }
+    background: #43638c;
+    background: radial-gradient(circle, #43638c 20%, #162741 100%); }
   .card-cover.bystander {
-    background-color: #f1c40f; }
+    background: #d8d3c9;
+    background: radial-gradient(circle, #d8d3c9 20%, #bab2a3 100%); }
   .card-cover.assassin {
-    background-color: #000000; }
+    background: #7a7761;
+    background: radial-gradient(circle, #7a7761 0%, #1a1b1a 100%); }
+  .card-cover.lifted {
+    transform: scaleY(0.5); }
 
 .card {
   z-index: 0;

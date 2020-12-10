@@ -27,7 +27,7 @@
     <div id="cards">
         <template v-for="card in cards">
             <div class="card-wrapper">
-                <div class="card-cover" v-if="card.covered" :class="card.type" @click=""></div>
+                <div class="card-cover" v-if="card.covered" :class="[card.type, card.lift]" @click="liftCard(card.id)"></div>
 
                 <div class="card" v-if="master || win" :class="card.type">
                     <span>{{ card.word }}</span>
@@ -77,6 +77,7 @@
         data: {
             // game data
             cards: [],
+            lift: [],
             teams: {'blue':{'master': [], 'player': []}, 'red':{'master': [], 'player': []}},
             // game status
             win: null,
@@ -92,6 +93,10 @@
         },
         created() {
             const socket = io();
+
+            for(let i = 0; i < 25; i++){
+                this.lift.push('');
+            }
 
             socket.on('connection', () => {
 
@@ -174,6 +179,8 @@
                 const hint = document.getElementsByName('hint')[0].value;
                 const hintNum = Number(document.getElementsByName('hintNum')[0].value);
 
+                if(hint === '') return;
+
                 await axios.post('/api/hint', {
                     userName: this.name,
                     hint,
@@ -185,6 +192,14 @@
                 });
 
                 this.updateGameData();
+            },
+            liftCard(id) {
+                if(this.cards[id].lift === 'lifted'){
+                    Vue.set(this.cards[id], 'lift', '');
+                }
+                else{
+                    Vue.set(this.cards[id], 'lift', 'lifted');
+                }
             },
         },
     })

@@ -28,6 +28,8 @@ class Codename {
         this.win = null;
 
         this.turn = this.countType(constants.BLUE) > this.countType(constants.RED) ? constants.BLUE : constants.RED;
+        
+        this.hint = null;
 
         this.logs = [];
     }
